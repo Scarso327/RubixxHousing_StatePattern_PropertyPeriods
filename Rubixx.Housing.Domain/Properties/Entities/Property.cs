@@ -40,18 +40,18 @@ public class Property
 
     public BasePropertyPeriod CurrentPropertyPeriod => GetPropertyPeriodAtDate(DateTime.Today) ?? throw new InvalidOperationException("A property should always have a valid current period");
 
-    public BasePropertyPeriod LastestPropertyPeriod => _propertyPeriods.Single(e => !e.EndDate.HasValue);
+    public BasePropertyPeriod LatestPropertyPeriod => _propertyPeriods.Single(e => !e.EndDate.HasValue);
 
     public BasePropertyPeriod? GetPropertyPeriodAtDate(DateTime date) => _propertyPeriods.First(e => e.StartDate <= date && (!e.EndDate.HasValue || e.EndDate >= date));
 
     public void AddPropertyPeriod(BasePropertyPeriod period) => _propertyPeriods.Add(period);
 
-    public void DisposeProperty() => LastestPropertyPeriod.DisposeProperty();
+    public void DisposeProperty() => LatestPropertyPeriod.DisposeProperty();
 
-    public void EndDevelopment() => LastestPropertyPeriod.EndDevelopment();
+    public void EndDevelopment() => LatestPropertyPeriod.EndDevelopment();
 
-    public void EndOccupancy(DateTime occupancyEndDate) => LastestPropertyPeriod.EndOccupancy(occupancyEndDate);
+    public void EndOccupancy(DateTime occupancyEndDate) => LatestPropertyPeriod.EndOccupancy(occupancyEndDate);
 
-    public void StartOccupancy(DateTime occupancyStartDate, string uORN) => LastestPropertyPeriod.StartOccupancy(occupancyStartDate, uORN);
+    public void StartOccupancy(DateTime occupancyStartDate, string uORN) => LatestPropertyPeriod.StartOccupancy(occupancyStartDate, uORN);
 
 }
