@@ -41,5 +41,5 @@ public class OccupiedPropertyPeriod : BasePropertyPeriod
         Property.AddPropertyPeriod(voidPropertyPeriod);
     }
 
-    public override void StartOccupancy(DateTime occupancyStartDate, string uORN) => throw new PropertyPeriodViolation(this, "This property is currently occupied so can't be let to someone else");
+    public override void StartOccupancy(DateTime occupancyStartDate, string uORN) => throw new PropertyPeriodViolation(this, "This property has an occupancy on the date you've specified");
 }

@@ -52,6 +52,6 @@ public class Property
 
     public void EndOccupancy(DateTime occupancyEndDate) => LatestPropertyPeriod.EndOccupancy(occupancyEndDate);
 
-    public void StartOccupancy(DateTime occupancyStartDate, string uORN) => LatestPropertyPeriod.StartOccupancy(occupancyStartDate, uORN);
+    public void StartOccupancy(DateTime occupancyStartDate, string uORN) => (GetPropertyPeriodAtDate(occupancyStartDate) ?? LatestPropertyPeriod).StartOccupancy(occupancyStartDate, uORN);
 
 }

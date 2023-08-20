@@ -52,7 +52,7 @@ internal class Property_StartOccupancy
 
         var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-002"));
 
-        Assert.That(exception.Message, Is.EqualTo("This property is currently occupied so can't be let to someone else"));
+        Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
     }
 
     [Test(Description = "Ensures back to back lets work")]
@@ -83,5 +83,36 @@ internal class Property_StartOccupancy
             Assert.That(supercededVoid!.StartDate, Is.EqualTo(newOccupancyStartDate));
             Assert.That(supercededVoid!.EndDate, Is.EqualTo(newOccupancyStartDate));
         });
+    }
+
+    [Test(Description = "Ensures currently occupied properties can't be let")]
+    public void VoidPropertyWithPreviousOccupancy_IfNewOccupancyStartDateOverlapsPreviousOccupancyThrowError()
+    {
+        var originalVoidStartDate = DateTime.Today.AddDays(-14);
+        var originalOccupancyStartDate = DateTime.Today.AddDays(-7);
+        var originalOccupancyEndDate = DateTime.Today.AddDays(-3);
+        var newOccupancyStartDate = originalOccupancyEndDate.AddDays(-1); // This start date would overlap with the previous occupancy
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, originalVoidStartDate, isDevelopment: false);
+
+        property.StartOccupancy(originalOccupancyStartDate, "ALB03-001");
+        property.EndOccupancy(originalOccupancyEndDate);
+
+        var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-002"));
+
+        Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
+    }
+
+    [Test(Description = "Ensures currently occupied properties can't be let")]
+    public void VoidProperty_NewOccupancyBeforeOriginalVoidStartThrowsError()
+    {
+        var voidStartDate = DateTime.Today;
+        var occupancyStartDate = DateTime.Today.AddDays(-7);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+
+        var exception = Assert.Throws<InvalidOperationException>(() => property.StartOccupancy(occupancyStartDate, "ALB03-001"));
+
+        Assert.That(exception.Message, Is.EqualTo("Sequence contains no matching element"));
     }
 }
