@@ -43,8 +43,7 @@ internal class Property_StartOccupancy
     {
         var originalVoidStartDate = DateTime.Today.AddDays(-14);
         var originalOccupancyStartDate = DateTime.Today.AddDays(-7);
-        var originalOccupancyEndDate = DateTime.Today.AddDays(-3);
-        var newOccupancyStartDate = originalOccupancyEndDate.AddDays(1);
+        var newOccupancyStartDate = DateTime.Today;
 
         var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, originalVoidStartDate, isDevelopment: false);
 
@@ -114,5 +113,29 @@ internal class Property_StartOccupancy
         var exception = Assert.Throws<InvalidOperationException>(() => property.StartOccupancy(occupancyStartDate, "ALB03-001"));
 
         Assert.That(exception.Message, Is.EqualTo("Sequence contains no matching element"));
+    }
+
+    [Test]
+    public void VoidPropertyWithPreviousOccupancy_DoesNotAllowOccupancyToBeStartedBeforeTheExistingPreviousOne()
+    {
+        // Arrange
+        var voidStartDate = DateTime.Today.AddDays(-14);
+        var previousOccupancyStartDate = DateTime.Today.AddDays(-7);
+        var previousOccupancyEndDate = previousOccupancyStartDate.AddDays(5);
+
+        var newOccupancyStartDate = voidStartDate.AddDays(1);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+
+        property.StartOccupancy(previousOccupancyStartDate, "ALB03-001");
+        property.EndOccupancy(previousOccupancyEndDate);
+
+        // Act
+
+        var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-002"));
+
+        // Assert
+
+        Assert.That(exception.Message, Is.EqualTo("Can't start an occupancy over a void period that has ended as it'll have future occupied or disposed periods"));
     }
 }
