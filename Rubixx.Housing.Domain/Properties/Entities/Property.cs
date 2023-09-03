@@ -1,4 +1,5 @@
-﻿using Rubixx.Housing.Domain.Properties.Entities.Periods;
+﻿using Rubixx.Housing.Domain.Occupancies.Entities;
+using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
 namespace Rubixx.Housing.Domain.Properties.Entities;
@@ -55,6 +56,6 @@ public class Property : IEntity
 
     public void EndOccupancy(DateTime occupancyEndDate) => LatestPropertyPeriod.EndOccupancy(occupancyEndDate);
 
-    public void StartOccupancy(DateTime occupancyStartDate, string uORN) => (GetPropertyPeriodAtDate(occupancyStartDate) ?? LatestPropertyPeriod).StartOccupancy(occupancyStartDate, uORN);
+    public Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN) => (GetPropertyPeriodAtDate(occupancyStartDate) ?? LatestPropertyPeriod).StartOccupancy(occupancyStartDate, uORN);
 
 }

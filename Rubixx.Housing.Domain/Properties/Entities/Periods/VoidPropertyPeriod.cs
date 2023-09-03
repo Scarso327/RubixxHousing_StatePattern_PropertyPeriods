@@ -1,4 +1,5 @@
-﻿using Rubixx.Housing.Domain.Properties.Exceptions;
+﻿using Rubixx.Housing.Domain.Occupancies.Entities;
+using Rubixx.Housing.Domain.Properties.Exceptions;
 
 namespace Rubixx.Housing.Domain.Properties.Entities.Periods;
 
@@ -49,7 +50,7 @@ public class VoidPropertyPeriod : BasePropertyPeriod
 
     public override void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A void property doesn't have an occupancy to end");
 
-    public override void StartOccupancy(DateTime occupancyStartDate, string uORN)
+    public override Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN)
     {
         if (OccupiedPropertyPeriodId.HasValue)
             throw new PropertyPeriodViolation(this, "Superceded Voids can't be used to start occupancies");
@@ -68,5 +69,7 @@ public class VoidPropertyPeriod : BasePropertyPeriod
             SupersedeVoid(occupiedPropertyPeriod);
 
         Property.AddPropertyPeriod(occupiedPropertyPeriod);
+
+        return occupiedPropertyPeriod.Occupancy;
     }
 }

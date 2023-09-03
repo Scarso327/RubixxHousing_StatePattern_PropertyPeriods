@@ -5,7 +5,7 @@ namespace Rubixx.Housing.Domain.Occupancies.Handlers.Commands.ExchangeOccupancie
 
 public record ExchangeOccupanciesCommand // Interfaces are ommitted from examples, should be using IRequest from the Mediator package
 {
-    public DateTime TransferDate { get; set; } = DateTime.Today;
+    public DateTime ExchangeDate { get; set; } = DateTime.Today;
 
     public IReadOnlyList<OccupancyToOccupancyTransferDto> OccupanciesToTransfer { get; set; } = Array.Empty<OccupancyToOccupancyTransferDto>();
 }
@@ -19,11 +19,11 @@ public class ExchangeOccupanciesCommandHandler
         _occupancyRepository = occupancyRepository;
     }
 
-    public async Task Handle(ExchangeOccupanciesCommand command)
+    public async Task Handle(ExchangeOccupanciesCommand command, CancellationToken cancellationToken)
     {
         // TODO: General guard clauses
 
-        var endDate = command.TransferDate.AddDays(-1);
+        var endDate = command.ExchangeDate.AddDays(-1);
 
         foreach (var occupancyTransfer in command.OccupanciesToTransfer)
         {

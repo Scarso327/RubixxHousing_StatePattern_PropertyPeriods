@@ -1,4 +1,5 @@
-﻿using Rubixx.Housing.Domain.Properties.Exceptions;
+﻿using Rubixx.Housing.Domain.Occupancies.Entities;
+using Rubixx.Housing.Domain.Properties.Exceptions;
 using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
 namespace Rubixx.Housing.Domain.Properties.Entities.Periods;
@@ -31,5 +32,5 @@ public abstract class BasePropertyPeriod : IEntity
 
     public abstract void EndOccupancy(DateTime occupancyEndDate);
 
-    public abstract void StartOccupancy(DateTime occupancyStartDate, string uORN);
+    public abstract Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN);
 }
