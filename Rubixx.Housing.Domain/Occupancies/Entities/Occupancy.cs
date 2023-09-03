@@ -1,8 +1,9 @@
 ﻿using Rubixx.Housing.Domain.Properties.Entities.Periods;
+using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
 namespace Rubixx.Housing.Domain.Occupancies.Entities;
 
-public class Occupancy
+public class Occupancy : IEntity
 {
     protected Occupancy() { }
 
@@ -11,6 +12,8 @@ public class Occupancy
         OccupiedPropertyPeriod = occupiedPropertyPeriod;
         UORN = uORN;
     }
+
+    public Guid Id { get; set; }
 
     public string UORN { get; private set; }
 

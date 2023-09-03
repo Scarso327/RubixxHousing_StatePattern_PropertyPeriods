@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="RubixxExtensibility.SharedLibrary" Version="7.1.0-rc14" />
+  </ItemGroup>
+
 </Project>

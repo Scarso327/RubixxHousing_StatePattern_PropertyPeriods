@@ -1,8 +1,9 @@
 ﻿using Rubixx.Housing.Domain.Properties.Exceptions;
+using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
 namespace Rubixx.Housing.Domain.Properties.Entities.Periods;
 
-public abstract class BasePropertyPeriod
+public abstract class BasePropertyPeriod : IEntity
 {
     protected BasePropertyPeriod() { }
 
@@ -12,6 +13,8 @@ public abstract class BasePropertyPeriod
         _startDate = startDate;
         _endDate = endDate;
     }
+
+    public Guid Id { get; set; }
 
     private DateTime _startDate;
     public virtual DateTime StartDate { get => _startDate; protected set => _startDate = value; }

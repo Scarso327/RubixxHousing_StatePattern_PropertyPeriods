@@ -1,8 +1,9 @@
 ﻿using Rubixx.Housing.Domain.Properties.Entities.Periods;
+using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
 namespace Rubixx.Housing.Domain.Properties.Entities;
 
-public class Property
+public class Property : IEntity
 {
     protected Property() { }
 
@@ -32,6 +33,8 @@ public class Property
 
         _propertyPeriods.Add(new UnlettablePropertyPeriod(this, DateTime.Today));
     }
+
+    public Guid Id { get; set; }
 
     public string UPRN { get; private set; }
 
