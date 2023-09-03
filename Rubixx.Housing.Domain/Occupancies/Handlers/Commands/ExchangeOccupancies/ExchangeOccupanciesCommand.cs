@@ -1,7 +1,7 @@
 ﻿using Rubixx.Housing.Domain.Occupancies.Entities;
 using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
-namespace Rubixx.Housing.Domain.Occupancies.Handlers.Commands.TransferOccupancy;
+namespace Rubixx.Housing.Domain.Occupancies.Handlers.Commands.ExchangeOccupancies;
 
 public record ExchangeOccupanciesCommand // Interfaces are ommitted from examples, should be using IRequest from the Mediator package
 {

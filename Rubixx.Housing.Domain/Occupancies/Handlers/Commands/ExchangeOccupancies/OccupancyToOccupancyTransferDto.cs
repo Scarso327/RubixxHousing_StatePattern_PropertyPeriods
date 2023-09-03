@@ -1,4 +1,4 @@
-﻿namespace Rubixx.Housing.Domain.Occupancies.Handlers.Commands.TransferOccupancy;
+﻿namespace Rubixx.Housing.Domain.Occupancies.Handlers.Commands.ExchangeOccupancies;
 
 public record OccupancyToOccupancyTransferDto
 {
