@@ -43,11 +43,17 @@ public class Property : IEntity
     private readonly List<BasePropertyPeriod> _propertyPeriods = new();
     public virtual IReadOnlyList<BasePropertyPeriod> PropertyPeriods => _propertyPeriods.AsReadOnly();
 
+    /// <summary>
+    /// Returns same as <see cref="PropertyPeriods"/> but excludes any <see cref="VoidPropertyPeriod"/> where <see cref="VoidPropertyPeriod.OccupiedPropertyPeriodId"/> has an id
+    /// </summary>
+    private IReadOnlyList<BasePropertyPeriod> PropertyPeriodsWithoutSupercededVoids
+        => _propertyPeriods.Where(e => e is not VoidPropertyPeriod eAsVoidPeriod || !eAsVoidPeriod.OccupiedPropertyPeriodId.HasValue).ToList().AsReadOnly();
+
     public BasePropertyPeriod CurrentPropertyPeriod => GetPropertyPeriodAtDate(DateTime.Today) ?? throw new InvalidOperationException("A property should always have a valid current period");
 
-    public BasePropertyPeriod LatestPropertyPeriod => _propertyPeriods.Single(e => !e.EndDate.HasValue);
+    public BasePropertyPeriod LatestPropertyPeriod => _propertyPeriods.Single(e => !e.EndDate.HasValue); // No need to filter superceded voids as superceded voids always have end dates
 
-    public BasePropertyPeriod? GetPropertyPeriodAtDate(DateTime date) => _propertyPeriods.First(e => e.StartDate <= date && (!e.EndDate.HasValue || e.EndDate >= date));
+    public BasePropertyPeriod? GetPropertyPeriodAtDate(DateTime date) => PropertyPeriodsWithoutSupercededVoids.First(e => e.StartDate <= date && (!e.EndDate.HasValue || e.EndDate >= date));
 
     public void AddPropertyPeriod(BasePropertyPeriod period) => _propertyPeriods.Add(period);
 

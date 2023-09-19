@@ -26,6 +26,81 @@ public abstract class BasePropertyPeriod : IEntity
     public Guid PropertyId { get; private set; }
     public virtual Property Property { get; set; }
 
+    public BasePropertyPeriod? PeriodBeforeThisOne => Property.GetPropertyPeriodAtDate(StartDate.AddDays(-1));
+    public BasePropertyPeriod? PeriodAfterThisOne => EndDate.HasValue ? Property.GetPropertyPeriodAtDate(EndDate.Value.AddDays(1)) : null;
+
+    public abstract bool CanReviseStartDate { get; }
+
+    public abstract bool CanReviseEndDate { get; }
+
+    public virtual void ReviseStartDate(DateTime newStartDate)
+    {
+        if (!CanReviseStartDate)
+            throw new PropertyPeriodViolation(this, "You can't revise the start date of this property period");
+
+        if (StartDate.Date == newStartDate.Date)
+            throw new PropertyPeriodViolation(this, "You can't revise the start date to be equal to the existing start date");
+
+        var periodBeforeThisOne = PeriodBeforeThisOne;
+
+        StartDate = newStartDate;
+
+        var periodBeforeDesiredEndDate = newStartDate.AddDays(-1);
+
+        // Handle revising of the adjacent periods
+        if (periodBeforeThisOne is not null && periodBeforeThisOne.EndDate != periodBeforeDesiredEndDate)
+        {
+            if (newStartDate.Date < periodBeforeThisOne.StartDate)
+                throw new PropertyPeriodViolation(this, "You can't revise the start date beyond the start date of the previous property period");
+
+            // Similar to comment in Revise End Date just the opposite
+            if (periodBeforeThisOne is OccupiedPropertyPeriod)
+            {
+                var gapFillingVoidPropertyPeriod = new VoidPropertyPeriod(Property, startDate: periodBeforeThisOne.EndDate!.Value.AddDays(1), endDate: StartDate.AddDays(-1));
+                Property.AddPropertyPeriod(gapFillingVoidPropertyPeriod);
+
+                return; // We don't want to revise the start date of the occupied period
+            }
+
+            periodBeforeThisOne.ReviseEndDate(periodBeforeDesiredEndDate);
+        }
+    }
+
+    public virtual void ReviseEndDate(DateTime newEndDate)
+    {
+        if (!CanReviseEndDate || !EndDate.HasValue)
+            throw new PropertyPeriodViolation(this, "You can't revise the end date of this property period");
+
+        if (EndDate?.Date == newEndDate.Date)
+            throw new PropertyPeriodViolation(this, "You can't revise the end date to be equal to the existing end date");
+
+        var periodAfterThisOne = PeriodAfterThisOne;
+
+        EndDate = newEndDate;
+
+        var periodBeforeDesiredStartDate = newEndDate.AddDays(1);
+
+        // Handle revising of the adjacent periods
+        if (periodAfterThisOne is not null && periodAfterThisOne.StartDate != periodBeforeDesiredStartDate)
+        {
+            if (newEndDate.Date >= periodAfterThisOne.EndDate)
+                throw new PropertyPeriodViolation(this, "You can't revise the end date beyond the end date of the previous property period");
+
+            // If it's an occupied property period and we're at this stage it means we're revising the end date backwards so it doesn't overlap
+            // We need to create a void property period between the period we're revising backwards and the pre-existing occupied after that one.
+            if (periodAfterThisOne is OccupiedPropertyPeriod)
+            {
+                var gapFillingVoidPropertyPeriod = new VoidPropertyPeriod(Property, startDate: newEndDate.AddDays(1), endDate: periodAfterThisOne.StartDate.AddDays(-1));
+                Property.AddPropertyPeriod(gapFillingVoidPropertyPeriod);
+
+                return; // We don't want to revise the start date of the occupied period
+            }
+
+            periodAfterThisOne.ReviseStartDate(periodBeforeDesiredStartDate);
+        }
+    }
+
+
     public virtual void DisposeProperty(DateTime disposalDate)
     {
         var disposedPropertyPeriod = new DisposedPropertyPeriod(Property, disposalDate);

@@ -9,6 +9,10 @@ public class VoidPropertyPeriod : BasePropertyPeriod
 
     public VoidPropertyPeriod(Property property, DateTime startDate, DateTime? endDate = null) : base(property, startDate, endDate) { }
 
+    public override bool CanReviseStartDate => true;
+
+    public override bool CanReviseEndDate => true;
+
     public Guid? OccupiedPropertyPeriodId { get; private set; }
     public virtual OccupiedPropertyPeriod? OccupiedPropertyPeriod { get; set; }
 
@@ -17,6 +21,7 @@ public class VoidPropertyPeriod : BasePropertyPeriod
         if (OccupiedPropertyPeriodId.HasValue)
             throw new PropertyPeriodViolation(this, "Unable to supersede a void after it's already been superseded");
 
+        OccupiedPropertyPeriodId = occupiedPropertyPeriod.Id;
         OccupiedPropertyPeriod = occupiedPropertyPeriod;
     }
 

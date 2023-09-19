@@ -9,6 +9,10 @@ public class DevelopmentPropertyPeriod : BasePropertyPeriod
 
     public DevelopmentPropertyPeriod(Property property, DateTime startDate, DateTime? endDate = null) : base(property, startDate, endDate) { }
 
+    public override bool CanReviseStartDate => false;
+
+    public override bool CanReviseEndDate => false;
+
     public override void EndDevelopment(DateTime endDate)
     {
         var voidPropertyPeriod = new VoidPropertyPeriod(Property, endDate.AddDays(1));
