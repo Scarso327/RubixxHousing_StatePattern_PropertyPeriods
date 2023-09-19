@@ -9,14 +9,12 @@ public class DevelopmentPropertyPeriod : BasePropertyPeriod
 
     public DevelopmentPropertyPeriod(Property property, DateTime startDate, DateTime? endDate = null) : base(property, startDate, endDate) { }
 
-    public override void DisposeProperty()
+    public override void EndDevelopment(DateTime endDate)
     {
-        throw new NotImplementedException();
-    }
+        var voidPropertyPeriod = new VoidPropertyPeriod(Property, endDate.AddDays(1));
+        Property.AddPropertyPeriod(voidPropertyPeriod);
 
-    public override void EndDevelopment()
-    {
-        throw new NotImplementedException();
+        EndDate = endDate;
     }
 
     public override void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A property in development can't have an occupancy to end");

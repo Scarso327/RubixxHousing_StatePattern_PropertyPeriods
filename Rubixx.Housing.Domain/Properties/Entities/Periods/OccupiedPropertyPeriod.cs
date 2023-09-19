@@ -31,7 +31,7 @@ public class OccupiedPropertyPeriod : BasePropertyPeriod
             throw new PropertyPeriodViolation(this, "You can't revise the end date of an unended occupancy");
     }
 
-    public override void DisposeProperty() => throw new PropertyPeriodViolation(this, "This property has an active occupancy so can't be disposed");
+    public override void DisposeProperty(DateTime disposalDate) => throw new PropertyPeriodViolation(this, "This property has an active occupancy so can't be disposed");
 
     public override void EndOccupancy(DateTime occupancyEndDate)
     {

@@ -26,9 +26,15 @@ public abstract class BasePropertyPeriod : IEntity
     public Guid PropertyId { get; private set; }
     public virtual Property Property { get; set; }
 
-    public abstract void DisposeProperty();
+    public virtual void DisposeProperty(DateTime disposalDate)
+    {
+        var disposedPropertyPeriod = new DisposedPropertyPeriod(Property, disposalDate);
+        Property.AddPropertyPeriod(disposedPropertyPeriod);
 
-    public virtual void EndDevelopment() => throw new PropertyPeriodViolation(this, "This property isn't in development");
+        EndDate = disposalDate.AddDays(-1);
+    }
+
+    public virtual void EndDevelopment(DateTime endDate) => throw new PropertyPeriodViolation(this, "This property isn't in development");
 
     public abstract void EndOccupancy(DateTime occupancyEndDate);
 

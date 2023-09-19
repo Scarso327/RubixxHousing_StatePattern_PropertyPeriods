@@ -9,7 +9,7 @@ public class DisposedPropertyPeriod : BasePropertyPeriod
 
     public DisposedPropertyPeriod(Property property, DateTime startDate, DateTime? endDate = null) : base(property, startDate, endDate) { }
 
-    public override void DisposeProperty() => throw new PropertyPeriodViolation(this, "This property has already been disposed");
+    public override void DisposeProperty(DateTime disposalDate) => throw new PropertyPeriodViolation(this, "This property has already been disposed");
 
     public override void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A disposed property can't have an occupancy to end");
 

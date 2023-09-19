@@ -1,4 +1,5 @@
-﻿using Rubixx.Housing.Domain.Occupancies.Entities;
+﻿using Rubixx.Housing.Domain.Common.Extensions;
+using Rubixx.Housing.Domain.Occupancies.Entities;
 using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using RubixxExtensibility.SharedLibrary.Common.Interfaces;
 
@@ -50,9 +51,19 @@ public class Property : IEntity
 
     public void AddPropertyPeriod(BasePropertyPeriod period) => _propertyPeriods.Add(period);
 
-    public void DisposeProperty() => LatestPropertyPeriod.DisposeProperty();
+    public void DisposeProperty(DateTime disposalDate)
+    {
+        disposalDate.ThrowIfInPast();
 
-    public void EndDevelopment() => LatestPropertyPeriod.EndDevelopment();
+        LatestPropertyPeriod.DisposeProperty(disposalDate);
+    }
+
+    public void EndDevelopment(DateTime endDate)
+    {
+        endDate.ThrowIfInPast();
+
+        LatestPropertyPeriod.EndDevelopment(endDate);
+    }
 
     public void EndOccupancy(DateTime occupancyEndDate) => LatestPropertyPeriod.EndOccupancy(occupancyEndDate);
 

@@ -43,4 +43,23 @@ internal class Property_Constructor
         Assert.That(property.PropertyPeriods, Has.Count.EqualTo(1));
         Assert.That(property.PropertyPeriods.Single().StartDate, Is.EqualTo(voidStartDate));
     }
+
+    [Test(Description = "Ensure property periods are created correctly")]
+    public void NullVoidStartDateOnLettableNonDevelopment_ThrowsException()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(() => new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate: null, isDevelopment: false));
+
+        Assert.That(exception.Message, Is.EqualTo("No start date was provided"));
+    }
+
+    [Test(Description = "Ensure property periods are created correctly")]
+    public void UnlettablePropertyType_HasOneUnlettablePropertyPeriod()
+    {
+        var voidStartDate = DateTime.Today;
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: false, voidStartDate, isDevelopment: false);
+
+        Assert.That(property.PropertyPeriods, Has.Count.EqualTo(1));
+        Assert.That(property.PropertyPeriods.Single(), Is.TypeOf<UnlettablePropertyPeriod>());
+    }
 }

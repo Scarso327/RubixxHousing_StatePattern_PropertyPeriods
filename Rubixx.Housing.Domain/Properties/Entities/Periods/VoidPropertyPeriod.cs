@@ -43,11 +43,6 @@ public class VoidPropertyPeriod : BasePropertyPeriod
         }
     }
 
-    public override void DisposeProperty()
-    {
-        throw new NotImplementedException();
-    }
-
     public override void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A void property doesn't have an occupancy to end");
 
     public override Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN)

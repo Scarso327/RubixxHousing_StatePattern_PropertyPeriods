@@ -38,6 +38,19 @@ internal class Property_StartOccupancy
         });
     }
 
+    [Test]
+    public void UnlettableProperty_DoesNotAllowOccupanciesToBeStarted()
+    {
+        var originalVoidStartDate = DateTime.Today.AddDays(-14);
+        var newOccupancyStartDate = DateTime.Today;
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: false, originalVoidStartDate, isDevelopment: false);
+
+        var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-001"));
+
+        Assert.That(exception.Message, Is.EqualTo("This property is unlettable"));
+    }
+
     [Test(Description = "Ensures currently occupied properties can't be let")]
     public void OccupiedProperty_DoesNotAllowOccupanciesToBeStarted()
     {
@@ -137,5 +150,44 @@ internal class Property_StartOccupancy
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo("Can't start an occupancy over a void period that has ended as it'll have future occupied or disposed periods"));
+    }
+
+    [Test]
+    public void DisposedProperty_DoesNotAllowOccupancyToBeStarted()
+    {
+        // Arrange
+        var disposalDate = DateTime.Today;
+        var voidStartDate = disposalDate.AddDays(-14);
+
+        var newOccupancyStartDate = disposalDate.AddDays(1);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+        property.DisposeProperty(disposalDate);
+
+        // Act
+
+        var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-001"));
+
+        // Assert
+
+        Assert.That(exception.Message, Is.EqualTo("An occupancy cannot be started once a property has been disposed"));
+    }
+
+    [Test]
+    public void DevelopmentProperty_DoesNotAllowOccupancyToBeStarted()
+    {
+        // Arrange
+        var developmentDate = DateTime.Today;
+        var newOccupancyStartDate = developmentDate.AddDays(1);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate: null, isDevelopment: true);
+
+        // Act
+
+        var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-001"));
+
+        // Assert
+
+        Assert.That(exception.Message, Is.EqualTo("A property still in development can't be let to someone"));
     }
 }
