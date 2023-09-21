@@ -118,7 +118,6 @@ public abstract class BasePropertyPeriod : IEntity
         }
     }
 
-
     public virtual void DisposeProperty(DateTime disposalDate)
     {
         var disposedPropertyPeriod = new DisposedPropertyPeriod(Property, disposalDate);
