@@ -21,7 +21,5 @@ public class DevelopmentPropertyPeriod : BasePropertyPeriod
         EndDate = endDate;
     }
 
-    public override void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A property in development can't have an occupancy to end");
-
     public override Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN) => throw new PropertyPeriodViolation(this, "A property still in development can't be let to someone");
 }

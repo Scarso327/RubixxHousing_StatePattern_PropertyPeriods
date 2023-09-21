@@ -111,7 +111,7 @@ public abstract class BasePropertyPeriod : IEntity
 
     public virtual void EndDevelopment(DateTime endDate) => throw new PropertyPeriodViolation(this, "This property isn't in development");
 
-    public abstract void EndOccupancy(DateTime occupancyEndDate);
+    public virtual void EndOccupancy(DateTime occupancyEndDate) => throw new PropertyPeriodViolation(this, "A property must be occupied before you can end an occupancy");
 
     public abstract Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN);
 }
