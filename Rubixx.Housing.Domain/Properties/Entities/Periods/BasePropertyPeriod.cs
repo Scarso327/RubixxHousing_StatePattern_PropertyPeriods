@@ -17,21 +17,45 @@ public abstract class BasePropertyPeriod : IEntity
 
     public Guid Id { get; set; }
 
+    public Guid? SupercededByPropertyPeriodId { get; protected set; }
+    public virtual BasePropertyPeriod? SupercededByPropertyPeriod { get; set; }
+
+    public virtual bool CanSupercedePeriods => false;
+    public virtual bool CanBeSuperceded => false;
+
+    public abstract bool CanReviseStartDate { get; }
+    public abstract bool CanReviseEndDate { get; }
+
     private DateTime _startDate;
-    public virtual DateTime StartDate { get => _startDate; protected set => _startDate = value; }
+    public virtual DateTime StartDate {
+        get => SupercededByPropertyPeriod?.StartDate ?? _startDate;
+        protected set
+        {
+            if (SupercededByPropertyPeriodId.HasValue)
+                throw new PropertyPeriodViolation(this, "Unable to set start date of superceded property period directly");
+
+            _startDate = value;
+        }
+    }
 
     private DateTime? _endDate;
-    public virtual DateTime? EndDate { get => _endDate; protected set => _endDate = value; }
+    public virtual DateTime? EndDate
+    {
+        get => SupercededByPropertyPeriod?.StartDate ?? _endDate;
+        protected set
+        {
+            if (SupercededByPropertyPeriodId.HasValue)
+                throw new PropertyPeriodViolation(this, "Unable to set end date of superceded property period directly");
+
+            _endDate = value;
+        }
+    }
 
     public Guid PropertyId { get; private set; }
     public virtual Property Property { get; set; }
 
     public BasePropertyPeriod? PeriodBeforeThisOne => Property.GetPropertyPeriodAtDate(StartDate.AddDays(-1));
     public BasePropertyPeriod? PeriodAfterThisOne => EndDate.HasValue ? Property.GetPropertyPeriodAtDate(EndDate.Value.AddDays(1)) : null;
-
-    public abstract bool CanReviseStartDate { get; }
-
-    public abstract bool CanReviseEndDate { get; }
 
     public virtual void ReviseStartDate(DateTime newStartDate)
     {
@@ -51,14 +75,14 @@ public abstract class BasePropertyPeriod : IEntity
         if (periodBeforeThisOne is not null && periodBeforeThisOne.EndDate != periodBeforeDesiredEndDate)
         {
             // If we're an occupied period and our start date is going to equal the start date of the period before us and it's void then we supercede it.
-            var isSuperceding = periodBeforeThisOne is VoidPropertyPeriod && newStartDate.Date == periodBeforeThisOne.StartDate && this is OccupiedPropertyPeriod;
+            var isSuperceding = periodBeforeThisOne.CanBeSuperceded && newStartDate.Date == periodBeforeThisOne.StartDate && CanSupercedePeriods;
 
             if (newStartDate.Date <= periodBeforeThisOne.StartDate && !isSuperceding)
                 throw new PropertyPeriodViolation(this, "You can't revise the start date beyond the start date of the previous property period");
 
             if (isSuperceding)
             {
-                ((VoidPropertyPeriod)periodBeforeThisOne).SupersedeVoid((OccupiedPropertyPeriod)this);
+                periodBeforeThisOne.SupersedePeriod(this);
                 return;
             }
 
@@ -93,14 +117,14 @@ public abstract class BasePropertyPeriod : IEntity
         if (periodAfterThisOne is not null && periodAfterThisOne.StartDate != periodBeforeDesiredStartDate)
         {
             // If we're an occupied period and our end date is going to equal the end date of the period before us and it's void then we supercede it.
-            var isSuperceding = periodAfterThisOne is VoidPropertyPeriod && newEndDate.Date == periodAfterThisOne.EndDate && this is OccupiedPropertyPeriod;
+            var isSuperceding = periodAfterThisOne.CanBeSuperceded && newEndDate.Date == periodAfterThisOne.EndDate && CanSupercedePeriods;
 
             if (newEndDate.Date >= periodAfterThisOne.EndDate && !isSuperceding)
                 throw new PropertyPeriodViolation(this, "You can't revise the end date beyond the end date of the previous property period");
 
             if (isSuperceding)
             {
-                ((VoidPropertyPeriod)periodAfterThisOne).SupersedeVoid((OccupiedPropertyPeriod)this);
+                periodAfterThisOne.SupersedePeriod(this);
                 return;
             }
 
@@ -116,6 +140,17 @@ public abstract class BasePropertyPeriod : IEntity
 
             periodAfterThisOne.ReviseStartDate(periodBeforeDesiredStartDate);
         }
+    }
+
+    public void RemoveEndDate() => EndDate = null;
+
+    public void SupersedePeriod(BasePropertyPeriod supercedingPropertyPeriod)
+    {
+        if (SupercededByPropertyPeriodId.HasValue)
+            throw new PropertyPeriodViolation(this, "Unable to supersede a period after it's already been superseded");
+
+        SupercededByPropertyPeriodId = supercedingPropertyPeriod.Id;
+        SupercededByPropertyPeriod = supercedingPropertyPeriod;
     }
 
     public virtual void DisposeProperty(DateTime disposalDate)

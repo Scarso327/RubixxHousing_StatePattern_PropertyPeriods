@@ -47,7 +47,7 @@ public class Property : IEntity
     /// Returns same as <see cref="PropertyPeriods"/> but excludes any <see cref="VoidPropertyPeriod"/> where <see cref="VoidPropertyPeriod.OccupiedPropertyPeriodId"/> has an id
     /// </summary>
     public IReadOnlyList<BasePropertyPeriod> PropertyPeriodsWithoutSupercededVoids
-        => _propertyPeriods.Where(e => e is not VoidPropertyPeriod eAsVoidPeriod || !eAsVoidPeriod.OccupiedPropertyPeriodId.HasValue).ToList().AsReadOnly();
+        => _propertyPeriods.Where(e => !e.SupercededByPropertyPeriodId.HasValue).ToList().AsReadOnly();
 
     public BasePropertyPeriod CurrentPropertyPeriod => GetPropertyPeriodAtDate(DateTime.Today) ?? throw new InvalidOperationException("A property should always have a valid current period");
 
@@ -74,5 +74,51 @@ public class Property : IEntity
     public void EndOccupancy(DateTime occupancyEndDate) => LatestPropertyPeriod.EndOccupancy(occupancyEndDate);
 
     public Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN) => (GetPropertyPeriodAtDate(occupancyStartDate) ?? LatestPropertyPeriod).StartOccupancy(occupancyStartDate, uORN);
+
+    public void CancelOccupancy()
+    {
+        var latestPropertyPeriod = LatestPropertyPeriod;
+
+        if (latestPropertyPeriod is not OccupiedPropertyPeriod occupiedPropertyPeriod)
+            throw new InvalidOperationException("This property is not currently occupied");
+
+        if (!occupiedPropertyPeriod.CanBeCancelled)
+            throw new InvalidOperationException("This occupancy can't be canncelled");
+
+        // Finding the void period to use
+
+        // 1 - We use the void period that was superceded by the occupancy if start dates still match
+        var voidPeriod = _propertyPeriods.OfType<VoidPropertyPeriod>().SingleOrDefault(p => p.SupercededByPropertyPeriod == occupiedPropertyPeriod)
+            // 2 - If the period before isn't void we create a new one
+            ?? (occupiedPropertyPeriod.PeriodBeforeThisOne is not VoidPropertyPeriod voidPeriodBeforeOccupancy ? 
+                new VoidPropertyPeriod(this, occupiedPropertyPeriod.StartDate)
+                    // 3 - If it is a void, use that
+                    : voidPeriodBeforeOccupancy);
+
+        // Superceded ourselves
+        occupiedPropertyPeriod.SupersedePeriod(voidPeriod);
+
+        if (voidPeriod.EndDate.HasValue) voidPeriod.RemoveEndDate();
+
+        // NOTE: This isn't included in this example but at this stage we need to take all transactions from all accounts on the occupancy and move them onto the void period
+    }
+
+#pragma warning disable CA1822 // Mark members as static
+    public void ReinstateOccupancy(OccupiedPropertyPeriod periodToReinstate)
+#pragma warning restore CA1822 // Mark members as static
+    {
+        if (!periodToReinstate.CanBeReinstated)
+            throw new InvalidOperationException("This occupancy can't be reinstated");
+
+        if (periodToReinstate.PeriodAfterThisOne is not VoidPropertyPeriod voidPeriod || voidPeriod.EndDate.HasValue)
+            throw new InvalidOperationException("There have been changes to this property's periods meaning you can no longer reinstate this historial occupancy");
+
+        voidPeriod.SupersedePeriod(periodToReinstate);
+        periodToReinstate.RemoveEndDate();
+
+        // Cancelled occupancies get their periods superceded by a void, here we just swap it so our occupancy supercedes whatever superceded us
+        if (periodToReinstate.SupercededByPropertyPeriod is not null)
+            periodToReinstate.SupercedeOverlappingPeriod();
+    }
 
 }

@@ -96,7 +96,7 @@ internal class Property_StartOccupancy
             Assert.That(property.PropertyPeriods.OfType<VoidPropertyPeriod>().Count(), Is.EqualTo(2));
             Assert.That(property.PropertyPeriods.OfType<OccupiedPropertyPeriod>().Count(), Is.EqualTo(2));
 
-            var supercededVoid = property.PropertyPeriods.OfType<VoidPropertyPeriod>().SingleOrDefault(e => e.OccupiedPropertyPeriod is not null);
+            var supercededVoid = property.PropertyPeriods.OfType<VoidPropertyPeriod>().SingleOrDefault(e => e.SupercededByPropertyPeriod is not null);
 
             Assert.That(supercededVoid, Is.Not.Null);
             Assert.That(supercededVoid!.StartDate, Is.EqualTo(newOccupancyStartDate));

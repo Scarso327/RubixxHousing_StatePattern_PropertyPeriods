@@ -9,48 +9,14 @@ public class VoidPropertyPeriod : BasePropertyPeriod
 
     public VoidPropertyPeriod(Property property, DateTime startDate, DateTime? endDate = null) : base(property, startDate, endDate) { }
 
+    public override bool CanBeSuperceded => true;
+
     public override bool CanReviseStartDate => true;
-
     public override bool CanReviseEndDate => true;
-
-    public Guid? OccupiedPropertyPeriodId { get; private set; }
-    public virtual OccupiedPropertyPeriod? OccupiedPropertyPeriod { get; set; }
-
-    public void SupersedeVoid(OccupiedPropertyPeriod occupiedPropertyPeriod)
-    {
-        if (OccupiedPropertyPeriodId.HasValue)
-            throw new PropertyPeriodViolation(this, "Unable to supersede a void after it's already been superseded");
-
-        OccupiedPropertyPeriodId = occupiedPropertyPeriod.Id;
-        OccupiedPropertyPeriod = occupiedPropertyPeriod;
-    }
-
-    public override DateTime StartDate {
-        get => OccupiedPropertyPeriod?.StartDate ?? base.StartDate;
-        protected set
-        {
-            if (OccupiedPropertyPeriodId.HasValue)
-                throw new PropertyPeriodViolation(this, "Unable to set start date of superceded void directly");
-
-            base.StartDate = value;
-        }
-    }
-
-    public override DateTime? EndDate
-    {
-        get => OccupiedPropertyPeriod?.StartDate ?? base.EndDate;
-        protected set
-        {
-            if (OccupiedPropertyPeriodId.HasValue)
-                throw new PropertyPeriodViolation(this, "Unable to set end date of superceded void directly");
-
-            base.EndDate = value;
-        }
-    }
 
     public override Occupancy StartOccupancy(DateTime occupancyStartDate, string uORN)
     {
-        if (OccupiedPropertyPeriodId.HasValue)
+        if (SupercededByPropertyPeriodId.HasValue)
             throw new PropertyPeriodViolation(this, "Superceded Voids can't be used to start occupancies");
 
         // Void Periods only end if a property is let or disposed which if that happens we can't let an occupancy before it.
@@ -64,7 +30,7 @@ public class VoidPropertyPeriod : BasePropertyPeriod
         // Instead of deleting void peridos that have been completely overridden we make them into a "superceded void"
         // so the data can be accessed but it won't ever be used to handle future periods
         if (occupancyStartDate <= StartDate)
-            SupersedeVoid(occupiedPropertyPeriod);
+            SupersedePeriod(occupiedPropertyPeriod);
 
         Property.AddPropertyPeriod(occupiedPropertyPeriod);
 

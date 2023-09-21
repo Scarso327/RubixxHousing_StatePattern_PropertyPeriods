@@ -24,7 +24,26 @@ public class Occupancy : IEntity
     public Guid OccupiedPropertyPeriodId { get; private set; }
     public virtual OccupiedPropertyPeriod OccupiedPropertyPeriod { get; set; }
 
+    public bool CanBeCancelled => OccupiedPropertyPeriod.CanBeCancelled;
+    public bool CanBeReinstated => OccupiedPropertyPeriod.CanBeReinstated;
+
     public void ReviseStartDate(DateTime newStartDate) => OccupiedPropertyPeriod.ReviseStartDate(newStartDate);
 
     public void ReviseEndDate(DateTime newEndDate, DateTime? newNotifiedDate) => OccupiedPropertyPeriod.ReviseEndDate(newEndDate, newNotifiedDate ?? newEndDate);
+
+    public void CancelOccupancy()
+    {
+        OccupiedPropertyPeriod.Property.CancelOccupancy();
+
+        // NOTE: Not included in this example but we need to set end date for all unended occupants against this occupancy here
+    }
+
+    public void ReinstateOccupancy()
+    {
+        var oldEndDate = EndDate; // We need to save this here to do the note provided below as our end date is going to be removed by the Property side of things
+
+        OccupiedPropertyPeriod.Property.ReinstateOccupancy(OccupiedPropertyPeriod);
+
+        // NOTE: Not included in this example project but here we need to remove the end date from all occupants where their end date was equal to our old end date
+    }
 }

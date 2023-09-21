@@ -17,8 +17,11 @@ public class OccupiedPropertyPeriod : BasePropertyPeriod
     public Guid OccupancyId { get; private set; }
     public virtual Occupancy Occupancy { get; set; }
 
-    public Guid? SupercededVoidPropertyPeriodId { get; private set; }
-    public virtual VoidPropertyPeriod? SupercededVoidPropertyPeriod { get; set; }
+    public bool CanBeCancelled => !EndDate.HasValue;
+    public bool CanBeReinstated => EndDate.HasValue && !PeriodAfterThisOne!.EndDate.HasValue && PeriodAfterThisOne is VoidPropertyPeriod;
+
+    public override bool CanSupercedePeriods => true;
+    public override bool CanBeSuperceded => CanBeCancelled;
 
     // This check doesn't account for occupied period's not allowing you to force revise them from others as that is added via guard clause on the revise methods in this class already
     // The only time the period after or before really matters is when the dates are going to overlap
@@ -49,6 +52,18 @@ public class OccupiedPropertyPeriod : BasePropertyPeriod
     {
         NotifiedDate = newNotifiedDate;
         ReviseEndDate(newEndDate);
+    }
+
+    public void SupercedeOverlappingPeriod()
+    {
+        if (SupercededByPropertyPeriod is null)
+            return;
+
+        SupercededByPropertyPeriod.SupersedePeriod(this);
+
+        // Unset Superceded Periods
+        SupercededByPropertyPeriod = null;
+        SupercededByPropertyPeriodId = null;
     }
 
     public override void DisposeProperty(DateTime disposalDate) => throw new PropertyPeriodViolation(this, "This property has an active occupancy so can't be disposed");

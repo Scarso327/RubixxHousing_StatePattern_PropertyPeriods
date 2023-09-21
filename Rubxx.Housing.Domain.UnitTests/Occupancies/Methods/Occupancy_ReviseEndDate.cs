@@ -136,8 +136,8 @@ internal class Occupancy_ReviseEndDate
         {
             // Ensure the void period was superseded by the occupancy we're revising
             Assert.That(voidPeriodBetweenOccupancies, Is.Not.Null);
-            Assert.That(voidPeriodBetweenOccupancies.OccupiedPropertyPeriodId.HasValue, Is.True);
-            Assert.That(voidPeriodBetweenOccupancies.OccupiedPropertyPeriod, Is.EqualTo(occupancy.OccupiedPropertyPeriod));
+            Assert.That(voidPeriodBetweenOccupancies.SupercededByPropertyPeriodId.HasValue, Is.True);
+            Assert.That(voidPeriodBetweenOccupancies.SupercededByPropertyPeriod, Is.EqualTo(occupancy.OccupiedPropertyPeriod));
 
             Assert.That(property.ValidatePropertyPeriods(), Is.True);
         });
