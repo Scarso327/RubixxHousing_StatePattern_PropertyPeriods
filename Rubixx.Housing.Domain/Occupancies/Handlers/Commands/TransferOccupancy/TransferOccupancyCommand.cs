@@ -45,6 +45,9 @@ public class TransferOccupancyCommandHandler
         if (occupancy.EndDate.HasValue)
             throw new InvalidOperationException("You can't transfer an occupancy once it's ended");
 
+        if (command.TransferDate <= occupancy.StartDate)
+            throw new InvalidOperationException("The transfer date can't be before the occupancy started");
+
         // Get new property
         var property = await _propertyRepository.GetByIdAsync(command.TargetPropertyId)
             ?? throw new NotFoundException(typeof(Property), command.TargetPropertyId);

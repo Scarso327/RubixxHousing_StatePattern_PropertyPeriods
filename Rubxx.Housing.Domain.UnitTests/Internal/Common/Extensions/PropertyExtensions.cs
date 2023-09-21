@@ -20,6 +20,9 @@ internal static class PropertyExtensions
         var hasOverlappingPeriods = propertyPeriods.Any(e => propertyPeriods.Any(x => e != x && e.StartDate <= x.EndDate && e.EndDate >= x.StartDate));
         if (hasOverlappingPeriods) return false;
 
+        var hasPeriodsWithOutOfOrderDates = propertyPeriods.Any(e => e.StartDate > e.EndDate);
+        if (hasPeriodsWithOutOfOrderDates) return false;
+
         return propertyPeriods.First().ValidatePropertyPeriod();
     }
 

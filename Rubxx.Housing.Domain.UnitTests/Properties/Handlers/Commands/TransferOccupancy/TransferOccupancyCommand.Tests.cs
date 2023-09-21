@@ -37,7 +37,7 @@ internal class TransferOccupancyCommandTests
         var command = new TransferOccupancyCommand()
         {
             OccupancyId = occupancy.Id,
-            TransferDate = DateTime.Today,
+            TransferDate = occupancyStartDate.AddDays(1),
             NewUORN = "ALB05-001",
             TargetPropertyId = targetProperty.Id,
         };
@@ -66,7 +66,11 @@ internal class TransferOccupancyCommandTests
             Assert.That(occupancy.EndDate, Is.EqualTo(command.TransferDate));
         });
 
-        Assert.That(property.ValidatePropertyPeriods(), Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(property.ValidatePropertyPeriods(), Is.True);
+            Assert.That(targetProperty.ValidatePropertyPeriods(), Is.True);
+        });
     }
 
     [Test]
@@ -107,6 +111,10 @@ internal class TransferOccupancyCommandTests
         var exception = Assert.ThrowsAsync<PropertyPeriodViolation>(async () => await handler.Handle(command, CancellationToken.None));
         Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
 
-        Assert.That(property.ValidatePropertyPeriods(), Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(property.ValidatePropertyPeriods(), Is.True);
+            Assert.That(targetProperty.ValidatePropertyPeriods(), Is.True);
+        });
     }
 }
