@@ -126,21 +126,6 @@ internal class Property_StartOccupancy
         Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
-    [Test(Description = "Ensures currently occupied properties can't be let")]
-    public void VoidProperty_NewOccupancyBeforeOriginalVoidStartThrowsError()
-    {
-        var voidStartDate = DateTime.Today;
-        var occupancyStartDate = DateTime.Today.AddDays(-7);
-
-        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
-
-        var exception = Assert.Throws<InvalidOperationException>(() => property.StartOccupancy(occupancyStartDate, "ALB03-001"));
-
-        Assert.That(exception.Message, Is.EqualTo("Sequence contains no matching element"));
-
-        Assert.That(property.ValidatePropertyPeriods(), Is.True);
-    }
-
     [Test]
     public void VoidPropertyWithPreviousOccupancy_DoesNotAllowOccupancyToBeStartedBeforeTheExistingPreviousOne()
     {

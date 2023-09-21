@@ -53,7 +53,7 @@ public class Property : IEntity
 
     public BasePropertyPeriod LatestPropertyPeriod => _propertyPeriods.Single(e => !e.EndDate.HasValue); // No need to filter superceded voids as superceded voids always have end dates
 
-    public BasePropertyPeriod? GetPropertyPeriodAtDate(DateTime date) => PropertyPeriodsWithoutSupercededVoids.First(e => e.StartDate <= date && (!e.EndDate.HasValue || e.EndDate >= date));
+    public BasePropertyPeriod? GetPropertyPeriodAtDate(DateTime date) => PropertyPeriodsWithoutSupercededVoids.FirstOrDefault(e => e.StartDate <= date && (!e.EndDate.HasValue || e.EndDate >= date));
 
     public void AddPropertyPeriod(BasePropertyPeriod period) => _propertyPeriods.Add(period);
 
@@ -95,6 +95,11 @@ public class Property : IEntity
                     // 3 - If it is a void, use that
                     : voidPeriodBeforeOccupancy);
 
+        // We can basically just reinstate the void period we forcefully ended
+        // NOTE: This line MUST be here otherwise you'll attempt to supercede the occupied period with the void period it already supercedes
+        if (voidPeriod.SupercededByPropertyPeriod == occupiedPropertyPeriod)
+            voidPeriod.UnsupersedePeriod();
+
         // Superceded ourselves
         occupiedPropertyPeriod.SupersedePeriod(voidPeriod);
 
@@ -110,15 +115,21 @@ public class Property : IEntity
         if (!periodToReinstate.CanBeReinstated)
             throw new InvalidOperationException("This occupancy can't be reinstated");
 
+        var periodBefore = periodToReinstate.PeriodBeforeThisOne;
+
+        if (periodBefore is not null && periodBefore.EndDate.HasValue && periodBefore.EndDate >= periodToReinstate.StartDate)
+            periodToReinstate.PeriodBeforeThisOne?.ReviseEndDate(periodToReinstate.StartDate.AddDays(-1));
+
         if (periodToReinstate.PeriodAfterThisOne is not VoidPropertyPeriod voidPeriod || voidPeriod.EndDate.HasValue)
             throw new InvalidOperationException("There have been changes to this property's periods meaning you can no longer reinstate this historial occupancy");
 
-        voidPeriod.SupersedePeriod(periodToReinstate);
-        periodToReinstate.RemoveEndDate();
+        if (periodToReinstate.SupercededByPropertyPeriodId.HasValue)
+            periodToReinstate.UnsupersedePeriod();
 
-        // Cancelled occupancies get their periods superceded by a void, here we just swap it so our occupancy supercedes whatever superceded us
-        if (periodToReinstate.SupercededByPropertyPeriod is not null)
-            periodToReinstate.SupercedeOverlappingPeriod();
+        if (voidPeriod.StartDate >= periodToReinstate.StartDate)
+            voidPeriod.SupersedePeriod(periodToReinstate);
+
+        periodToReinstate.RemoveEndDate();
     }
 
 }

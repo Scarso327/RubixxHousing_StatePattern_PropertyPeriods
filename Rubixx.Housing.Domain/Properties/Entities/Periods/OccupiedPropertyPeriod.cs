@@ -54,18 +54,6 @@ public class OccupiedPropertyPeriod : BasePropertyPeriod
         ReviseEndDate(newEndDate);
     }
 
-    public void SupercedeOverlappingPeriod()
-    {
-        if (SupercededByPropertyPeriod is null)
-            return;
-
-        SupercededByPropertyPeriod.SupersedePeriod(this);
-
-        // Unset Superceded Periods
-        SupercededByPropertyPeriod = null;
-        SupercededByPropertyPeriodId = null;
-    }
-
     public override void DisposeProperty(DateTime disposalDate) => throw new PropertyPeriodViolation(this, "This property has an active occupancy so can't be disposed");
 
     public override void EndOccupancy(DateTime occupancyEndDate)

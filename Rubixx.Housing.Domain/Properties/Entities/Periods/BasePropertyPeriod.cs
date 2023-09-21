@@ -104,7 +104,7 @@ public abstract class BasePropertyPeriod : IEntity
         if (!CanReviseEndDate || !EndDate.HasValue)
             throw new PropertyPeriodViolation(this, "You can't revise the end date of this property period");
 
-        if (EndDate?.Date == newEndDate.Date)
+        if (EndDate.HasValue && EndDate?.Date == newEndDate.Date)
             throw new PropertyPeriodViolation(this, "You can't revise the end date to be equal to the existing end date");
 
         var periodAfterThisOne = PeriodAfterThisOne;
@@ -149,8 +149,22 @@ public abstract class BasePropertyPeriod : IEntity
         if (SupercededByPropertyPeriodId.HasValue)
             throw new PropertyPeriodViolation(this, "Unable to supersede a period after it's already been superseded");
 
+        // This would cause references to start and end dates to cause access violation exceptions crashing the whole project
+        // Under normal usage this should never happen but including this to guard against it is a MUST
+        if (supercedingPropertyPeriod.SupercededByPropertyPeriod == this)
+            throw new InvalidOperationException("You can't supercede a property period using a period that is superceding it");
+
         SupercededByPropertyPeriodId = supercedingPropertyPeriod.Id;
         SupercededByPropertyPeriod = supercedingPropertyPeriod;
+    }
+
+    public void UnsupersedePeriod()
+    {
+        if (!SupercededByPropertyPeriodId.HasValue)
+            throw new PropertyPeriodViolation(this, "Unable to remove superseded period when period isn't superceded to begin with");
+
+        SupercededByPropertyPeriodId = null;
+        SupercededByPropertyPeriod = null;
     }
 
     public virtual void DisposeProperty(DateTime disposalDate)

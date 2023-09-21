@@ -6,7 +6,7 @@ namespace Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 internal class PropertyExtensionsTests
 {
     [Test]
-    public void PropertyWithGapsInPeriods_ThrowsSequenceError()
+    public void PropertyWithGapsInPeriods_ReturnsFalse()
     {
         // Arrange
         var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate: DateTime.Today, isDevelopment: false);
@@ -15,12 +15,7 @@ internal class PropertyExtensionsTests
         property.AddPropertyPeriod(new DevelopmentPropertyPeriod(property, startDate: DateTime.Today.AddDays(-7), endDate: DateTime.Today.AddDays(-2)));
 
         // Act
-        var exception = Assert.Throws<InvalidOperationException>(() => property.ValidatePropertyPeriods());
-
-        // Assert
-
-        // We expect this error as the property period will attempt to call Linq Single to get the period before or after itself for validation purposes
-        Assert.That(exception.Message, Is.EqualTo("Sequence contains no matching element"));
+        Assert.That(property.ValidatePropertyPeriods(), Is.False);
     }
 
     [Test]
