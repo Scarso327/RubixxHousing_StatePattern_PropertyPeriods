@@ -50,8 +50,17 @@ public abstract class BasePropertyPeriod : IEntity
         // Handle revising of the adjacent periods
         if (periodBeforeThisOne is not null && periodBeforeThisOne.EndDate != periodBeforeDesiredEndDate)
         {
-            if (newStartDate.Date < periodBeforeThisOne.StartDate)
+            // If we're an occupied period and our start date is going to equal the start date of the period before us and it's void then we supercede it.
+            var isSuperceding = periodBeforeThisOne is VoidPropertyPeriod && newStartDate.Date == periodBeforeThisOne.StartDate && this is OccupiedPropertyPeriod;
+
+            if (newStartDate.Date <= periodBeforeThisOne.StartDate && !isSuperceding)
                 throw new PropertyPeriodViolation(this, "You can't revise the start date beyond the start date of the previous property period");
+
+            if (isSuperceding)
+            {
+                ((VoidPropertyPeriod)periodBeforeThisOne).SupersedeVoid((OccupiedPropertyPeriod)this);
+                return;
+            }
 
             // Similar to comment in Revise End Date just the opposite
             if (periodBeforeThisOne is OccupiedPropertyPeriod)
@@ -83,8 +92,17 @@ public abstract class BasePropertyPeriod : IEntity
         // Handle revising of the adjacent periods
         if (periodAfterThisOne is not null && periodAfterThisOne.StartDate != periodBeforeDesiredStartDate)
         {
-            if (newEndDate.Date >= periodAfterThisOne.EndDate)
+            // If we're an occupied period and our start date is going to equal the start date of the period before us and it's void then we supercede it.
+            var isSuperceding = periodAfterThisOne is VoidPropertyPeriod && newEndDate.Date == periodAfterThisOne.EndDate && this is OccupiedPropertyPeriod;
+
+            if (newEndDate.Date >= periodAfterThisOne.EndDate && !isSuperceding)
                 throw new PropertyPeriodViolation(this, "You can't revise the end date beyond the end date of the previous property period");
+
+            if (isSuperceding)
+            {
+                ((VoidPropertyPeriod)periodAfterThisOne).SupersedeVoid((OccupiedPropertyPeriod)this);
+                return;
+            }
 
             // If it's an occupied property period and we're at this stage it means we're revising the end date backwards so it doesn't overlap
             // We need to create a void property period between the period we're revising backwards and the pre-existing occupied after that one.

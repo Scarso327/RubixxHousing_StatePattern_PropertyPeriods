@@ -105,4 +105,41 @@ internal class Occupancy_ReviseEndDate
 
         Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
+
+    [Test]
+    public void ReviseEndDateTowardsPeriodAfterEndedOccupancyWherePeriodAfterIsOccupied_SupersedesVoidPeriodBetweenThem()
+    {
+        // Arrange
+        var voidStartDate = DateTime.Today.AddDays(-7);
+
+        var occupancyStartDate = DateTime.Today.AddDays(-5);
+        var occupancyEndDate = occupancyStartDate.AddDays(5);
+
+        var secondOccupancyStartDate = occupancyEndDate.AddDays(4);
+
+        var revisedOccupancyEndDate = secondOccupancyStartDate.AddDays(-1);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+
+        var occupancy = property.StartOccupancy(occupancyStartDate, "ALB03-001");
+        property.EndOccupancy(occupancyEndDate);
+
+        property.StartOccupancy(secondOccupancyStartDate, "ALB03-002");
+
+        var voidPeriodBetweenOccupancies = property.PropertyPeriods.OfType<VoidPropertyPeriod>().Single(e => e.StartDate == occupancyEndDate.AddDays(1) && e.EndDate == secondOccupancyStartDate.AddDays(-1));
+
+        // Act
+        occupancy.ReviseEndDate(revisedOccupancyEndDate, null);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            // Ensure the void period was superseded by the occupancy we're revising
+            Assert.That(voidPeriodBetweenOccupancies, Is.Not.Null);
+            Assert.That(voidPeriodBetweenOccupancies.OccupiedPropertyPeriodId.HasValue, Is.True);
+            Assert.That(voidPeriodBetweenOccupancies.OccupiedPropertyPeriod, Is.EqualTo(occupancy.OccupiedPropertyPeriod));
+
+            Assert.That(property.ValidatePropertyPeriods(), Is.True);
+        });
+    }
 }
