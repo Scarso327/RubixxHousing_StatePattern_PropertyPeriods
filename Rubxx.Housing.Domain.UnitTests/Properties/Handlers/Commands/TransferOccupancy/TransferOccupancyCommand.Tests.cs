@@ -117,4 +117,48 @@ internal class TransferOccupancyCommandTests
             Assert.That(targetProperty.ValidatePropertyPeriods(), Is.True);
         });
     }
+
+    [Test]
+    public async Task UnendedOccupancyTransferToVoidWithTransferDateBeforeStartDate_ThrowsException()
+    {
+        var voidStartDate = DateTime.Today.AddDays(-7);
+        var occupancyStartDate = DateTime.Today.AddDays(3);
+
+        var property = new Property(uPRN: "ALB03", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+        var targetProperty = new Property(uPRN: "ALB05", isLettablePropertyType: true, voidStartDate, isDevelopment: false);
+
+        var occupancy = property.StartOccupancy(occupancyStartDate, "ALB03-001");
+
+        var command = new TransferOccupancyCommand()
+        {
+            OccupancyId = occupancy.Id,
+            TransferDate = occupancyStartDate.AddDays(-1),
+            NewUORN = "ALB05-001",
+            TargetPropertyId = targetProperty.Id,
+        };
+
+#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+
+        // Setup GetByIdAsync returns
+        _propertyRepository
+            .Setup(e => e.GetByIdAsync(It.IsAny<Guid>()))
+            .Returns(Task.FromResult(targetProperty));
+
+        _occupancyRepository
+            .Setup(e => e.GetByIdAsync(It.IsAny<Guid>()))
+            .Returns(Task.FromResult(occupancy));
+
+#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
+
+        var handler = new TransferOccupancyCommandHandler(_unitOfWork.Object, _propertyRepository.Object, _occupancyRepository.Object);
+
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await handler.Handle(command, CancellationToken.None));
+        Assert.That(exception.Message, Is.EqualTo("The transfer date can't be before the occupancy started"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(property.ValidatePropertyPeriods(), Is.True);
+            Assert.That(targetProperty.ValidatePropertyPeriods(), Is.True);
+        });
+    }
 }
