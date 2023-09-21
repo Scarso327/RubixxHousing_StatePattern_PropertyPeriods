@@ -92,7 +92,7 @@ public abstract class BasePropertyPeriod : IEntity
         // Handle revising of the adjacent periods
         if (periodAfterThisOne is not null && periodAfterThisOne.StartDate != periodBeforeDesiredStartDate)
         {
-            // If we're an occupied period and our start date is going to equal the start date of the period before us and it's void then we supercede it.
+            // If we're an occupied period and our end date is going to equal the end date of the period before us and it's void then we supercede it.
             var isSuperceding = periodAfterThisOne is VoidPropertyPeriod && newEndDate.Date == periodAfterThisOne.EndDate && this is OccupiedPropertyPeriod;
 
             if (newEndDate.Date >= periodAfterThisOne.EndDate && !isSuperceding)
