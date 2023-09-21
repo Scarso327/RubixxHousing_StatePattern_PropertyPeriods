@@ -1,6 +1,7 @@
 ﻿using Rubixx.Housing.Domain.Properties.Entities;
 using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using Rubixx.Housing.Domain.Properties.Exceptions;
+using Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 
 namespace Rubxx.Housing.Domain.UnitTests.Properties.Methods;
 
@@ -37,6 +38,8 @@ internal class Property_EndDevelopment
             Assert.That(developmentPropertyPeriod.StartDate, Is.EqualTo(DateTime.Today));
             Assert.That(developmentPropertyPeriod.EndDate, Is.EqualTo(DateTime.Today));
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensure property periods are created correctly")]
@@ -55,6 +58,8 @@ internal class Property_EndDevelopment
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo(PropertyIsNotInDevelopmentMessage));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
 
@@ -76,5 +81,7 @@ internal class Property_EndDevelopment
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo(PropertyIsNotInDevelopmentMessage));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 }

@@ -2,6 +2,7 @@
 using Rubixx.Housing.Domain.Properties.Entities;
 using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using Rubixx.Housing.Domain.Properties.Exceptions;
+using Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 
 namespace Rubxx.Housing.Domain.UnitTests.Properties.Methods;
 
@@ -37,6 +38,8 @@ internal class Property_DisposeProperty
             Assert.That(disposedPropertyPeriod.StartDate, Is.EqualTo(disposalDate));
             Assert.That(disposedPropertyPeriod.EndDate.HasValue, Is.False);
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensure property periods are created correctly")]
@@ -57,6 +60,8 @@ internal class Property_DisposeProperty
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo(ExpectedActiveOccupancyDisposalExceptionMessage));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensure property periods are created correctly")]
@@ -77,6 +82,8 @@ internal class Property_DisposeProperty
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo(ExpectedActiveOccupancyDisposalExceptionMessage));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensure property periods are created correctly")]
@@ -95,5 +102,7 @@ internal class Property_DisposeProperty
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo($"{disposalDate.ToShortDateString()} is in the past"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 }

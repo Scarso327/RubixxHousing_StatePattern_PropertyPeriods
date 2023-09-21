@@ -1,6 +1,7 @@
 ﻿using Rubixx.Housing.Domain.Properties.Entities;
 using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using Rubixx.Housing.Domain.Properties.Exceptions;
+using Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 
 namespace Rubxx.Housing.Domain.UnitTests.Properties.Methods;
 
@@ -36,6 +37,8 @@ internal class Property_StartOccupancy
             Assert.That(occupiedPropertyPeriod.Occupancy, Is.Not.Null);
             Assert.That(occupiedPropertyPeriod.Occupancy.StartDate, Is.EqualTo(occupancyStartDate));
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -49,6 +52,8 @@ internal class Property_StartOccupancy
         var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-001"));
 
         Assert.That(exception.Message, Is.EqualTo("This property is unlettable"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensures currently occupied properties can't be let")]
@@ -65,6 +70,8 @@ internal class Property_StartOccupancy
         var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-002"));
 
         Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensures back to back lets work")]
@@ -95,6 +102,8 @@ internal class Property_StartOccupancy
             Assert.That(supercededVoid!.StartDate, Is.EqualTo(newOccupancyStartDate));
             Assert.That(supercededVoid!.EndDate, Is.EqualTo(newOccupancyStartDate));
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensures currently occupied properties can't be let")]
@@ -113,6 +122,8 @@ internal class Property_StartOccupancy
         var exception = Assert.Throws<PropertyPeriodViolation>(() => property.StartOccupancy(newOccupancyStartDate, "ALB03-002"));
 
         Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test(Description = "Ensures currently occupied properties can't be let")]
@@ -126,6 +137,8 @@ internal class Property_StartOccupancy
         var exception = Assert.Throws<InvalidOperationException>(() => property.StartOccupancy(occupancyStartDate, "ALB03-001"));
 
         Assert.That(exception.Message, Is.EqualTo("Sequence contains no matching element"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -150,6 +163,8 @@ internal class Property_StartOccupancy
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo("Can't start an occupancy over a void period that has ended as it'll have future occupied or disposed periods"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -171,6 +186,8 @@ internal class Property_StartOccupancy
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo("An occupancy cannot be started once a property has been disposed"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -189,5 +206,7 @@ internal class Property_StartOccupancy
         // Assert
 
         Assert.That(exception.Message, Is.EqualTo("A property still in development can't be let to someone"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 }

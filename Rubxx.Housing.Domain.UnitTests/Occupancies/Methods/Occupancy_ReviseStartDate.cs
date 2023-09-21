@@ -1,6 +1,7 @@
 ﻿using Rubixx.Housing.Domain.Properties.Entities;
 using Rubixx.Housing.Domain.Properties.Entities.Periods;
 using Rubixx.Housing.Domain.Properties.Exceptions;
+using Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 
 namespace Rubxx.Housing.Domain.UnitTests.Occupancies.Methods;
 
@@ -34,6 +35,8 @@ internal class Occupancy_ReviseStartDate
             Assert.That(voidPropertyPeriod.EndDate, Is.EqualTo(revisedOccupancyStartDate.AddDays(-1)));
             Assert.That(occupiedPropertyPeriod.StartDate, Is.EqualTo(revisedOccupancyStartDate));
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -61,6 +64,8 @@ internal class Occupancy_ReviseStartDate
 
         // Assert
         Assert.That(exception.Message, Is.EqualTo("You must revise the end date of the occupancy before this one first"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -93,5 +98,7 @@ internal class Occupancy_ReviseStartDate
         {
             Assert.That(gapFillingVoidPeriod, Is.Not.Null);
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 }

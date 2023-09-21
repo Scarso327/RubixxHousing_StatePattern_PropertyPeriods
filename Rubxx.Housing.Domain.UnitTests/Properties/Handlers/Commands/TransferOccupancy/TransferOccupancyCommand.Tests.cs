@@ -4,6 +4,7 @@ using Rubixx.Housing.Domain.Occupancies.Handlers.Commands.TransferOccupancy;
 using Rubixx.Housing.Domain.Properties.Entities;
 using Rubixx.Housing.Domain.Properties.Exceptions;
 using RubixxExtensibility.SharedLibrary.Common.Interfaces;
+using Rubxx.Housing.Domain.UnitTests.Internal.Common.Extensions;
 
 namespace Rubxx.Housing.Domain.UnitTests.Properties.Handlers.Commands.TransferOccupancy;
 
@@ -64,6 +65,8 @@ internal class TransferOccupancyCommandTests
             Assert.That(transferredOccupancy.StartDate, Is.EqualTo(command.TransferDate));
             Assert.That(occupancy.EndDate, Is.EqualTo(command.TransferDate));
         });
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 
     [Test]
@@ -103,5 +106,7 @@ internal class TransferOccupancyCommandTests
 
         var exception = Assert.ThrowsAsync<PropertyPeriodViolation>(async () => await handler.Handle(command, CancellationToken.None));
         Assert.That(exception.Message, Is.EqualTo("This property has an occupancy on the date you've specified"));
+
+        Assert.That(property.ValidatePropertyPeriods(), Is.True);
     }
 }

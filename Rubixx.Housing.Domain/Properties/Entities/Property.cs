@@ -46,7 +46,7 @@ public class Property : IEntity
     /// <summary>
     /// Returns same as <see cref="PropertyPeriods"/> but excludes any <see cref="VoidPropertyPeriod"/> where <see cref="VoidPropertyPeriod.OccupiedPropertyPeriodId"/> has an id
     /// </summary>
-    private IReadOnlyList<BasePropertyPeriod> PropertyPeriodsWithoutSupercededVoids
+    public IReadOnlyList<BasePropertyPeriod> PropertyPeriodsWithoutSupercededVoids
         => _propertyPeriods.Where(e => e is not VoidPropertyPeriod eAsVoidPeriod || !eAsVoidPeriod.OccupiedPropertyPeriodId.HasValue).ToList().AsReadOnly();
 
     public BasePropertyPeriod CurrentPropertyPeriod => GetPropertyPeriodAtDate(DateTime.Today) ?? throw new InvalidOperationException("A property should always have a valid current period");
