@@ -119,7 +119,7 @@ internal class TransferOccupancyCommandTests
     }
 
     [Test]
-    public async Task UnendedOccupancyTransferToVoidWithTransferDateBeforeStartDate_ThrowsException()
+    public void UnendedOccupancyTransferToVoidWithTransferDateBeforeStartDate_ThrowsException()
     {
         var voidStartDate = DateTime.Today.AddDays(-7);
         var occupancyStartDate = DateTime.Today.AddDays(3);
